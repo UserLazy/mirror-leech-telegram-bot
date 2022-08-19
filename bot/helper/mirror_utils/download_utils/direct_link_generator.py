@@ -17,7 +17,7 @@ from cfscrape import create_scraper
 from bs4 import BeautifulSoup
 from base64 import standard_b64encode
 from time import sleep
-
+from zippyshare_downloader import extract_info
 from bot import LOGGER, UPTOBOX_TOKEN
 from bot.helper.ext_utils.exceptions import DirectDownloadLinkException
 
@@ -55,6 +55,8 @@ def direct_link_generator(link: str):
         return streamtape(link)
     elif 'bayfiles.com' in link:
         return anonfiles(link)
+    elif 'zippyshare.com' in link:
+        return zippy_share(link)
     elif 'racaty.net' in link:
         return racaty(link)
     elif '1fichier.com' in link:
@@ -71,6 +73,14 @@ def direct_link_generator(link: str):
         return sbembed(link)
     else:
         raise DirectDownloadLinkException(f'No Direct link function found for {link}')
+
+def zippy_share(url: str) -> str:
+    try:
+        zippy = extract_info(url, download=False)
+        dl_url = zippy.download_url
+        return dl_url
+    except (KeyError, AttributeError, TypeError, Exception) as e:
+        raise DirectDownloadLinkException(f"ERROR: Zippyshare got err: {e}")
 
 def yandex_disk(url: str) -> str:
     """ Yandex.Disk direct link generator
